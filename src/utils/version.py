@@ -1,7 +1,7 @@
 # Informazioni sulla versione del gioco
 
 VERSION = '1.0.0'
-BUILD_DATE = '2025-04-06 10:58:47'
+BUILD_DATE = '2025-04-06 15:41:01'
 
 def get_version():
     """Restituisce la versione corrente del gioco."""
