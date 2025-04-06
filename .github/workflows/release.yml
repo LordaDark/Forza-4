@@ -16,7 +16,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          dist/Forza4_Setup.exe
+          Forza4_Setup.exe
           version.json
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
