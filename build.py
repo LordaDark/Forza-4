@@ -7,20 +7,24 @@ import re
 import pkg_resources
 import pip
 
-def check_pyinstaller():
-    """Verifica se PyInstaller è installato e lo installa se necessario."""
-    try:
-        pkg_resources.get_distribution('pyinstaller')
-        return True
-    except pkg_resources.DistributionNotFound:
-        print("\nPyInstaller non trovato. Installazione in corso...")
+def check_dependencies():
+    """Verifica se tutte le dipendenze necessarie sono installate e le installa se necessario."""
+    dependencies = ['pyinstaller', 'pillow', 'cairosvg']
+    all_installed = True
+    
+    for dep in dependencies:
         try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
-            print("PyInstaller installato con successo!")
-            return True
-        except subprocess.CalledProcessError as e:
-            print(f"\nErrore durante l'installazione di PyInstaller: {e}")
-            return False
+            pkg_resources.get_distribution(dep)
+        except pkg_resources.DistributionNotFound:
+            print(f"\n{dep} non trovato. Installazione in corso...")
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", dep])
+                print(f"{dep} installato con successo!")
+            except subprocess.CalledProcessError as e:
+                print(f"\nErrore durante l'installazione di {dep}: {e}")
+                all_installed = False
+    
+    return all_installed
 
 def update_version_file(build_date):
     """Aggiorna il file version.py con la data di build corrente."""
@@ -38,10 +42,30 @@ def update_version_file(build_date):
     with open(version_file_path, 'w', encoding='utf-8') as f:
         f.write(content)
 
+def convert_icon():
+    """Converte l'icona SVG in ICO se necessario."""
+    svg_path = os.path.abspath('src/assets/icon.svg')
+    ico_path = os.path.abspath('src/assets/icon.ico')
+    
+    if not os.path.exists(svg_path):
+        print(f"\nAttenzione: L'icona SVG {svg_path} non è stata trovata.")
+        return None
+    
+    try:
+        subprocess.check_call([sys.executable, 'convert_icon.py'])
+        if os.path.exists(ico_path):
+            return ico_path
+    except subprocess.CalledProcessError as e:
+        print(f"\nErrore durante la conversione dell'icona: {e}")
+    except Exception as e:
+        print(f"\nErrore inaspettato durante la conversione dell'icona: {e}")
+    
+    return None
+
 def create_executable():
     """Crea l'eseguibile del gioco utilizzando PyInstaller."""
-    if not check_pyinstaller():
-        print("\nImpossibile procedere senza PyInstaller.")
+    if not check_dependencies():
+        print("\nImpossibile procedere senza tutte le dipendenze necessarie.")
         sys.exit(1)
 
     try:
@@ -57,11 +81,10 @@ def create_executable():
         build_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         update_version_file(build_date)
 
-        # Verifica l'esistenza dell'icona
-        icon_path = os.path.abspath('src/assets/icon.ico')
-        if not os.path.exists(icon_path):
-            print(f"\nAttenzione: L'icona {icon_path} non è stata trovata.")
-            icon_path = None
+        # Converti e verifica l'esistenza dell'icona
+        icon_path = convert_icon()
+        if not icon_path:
+            print("\nProcedo senza icona personalizzata.")
 
         # Verifica l'esistenza del file principale
         main_path = os.path.abspath('src/main.py')
