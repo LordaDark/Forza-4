@@ -36,7 +36,7 @@ jobs:
         $version = $env:GITHUB_REF -replace '^refs/tags/v',""
         $json = Get-Content version.json | ConvertFrom-Json
         $json.version = $version
-        $json.url = "https://github.com/owner/Forza-4/releases/download/v${version}/Forza4_Setup.exe"
+        $json.url = "https://github.com/LordaDark/Forza-4/releases/download/v${version}/Forza4_Setup.exe"
         $json | ConvertTo-Json | Set-Content version.json
     
     - name: Create Release
